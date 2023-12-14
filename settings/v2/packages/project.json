@@ -1,0 +1,19 @@
+{
+  "__version__": "1.0.1",
+  "physics": {
+    "collisionGroups": [
+      {
+        "index": 1,
+        "name": "USER"
+      },
+      {
+        "index": 2,
+        "name": "ENEMY"
+      },
+      {
+        "index": 3,
+        "name": "BULLET"
+      }
+    ]
+  }
+}
