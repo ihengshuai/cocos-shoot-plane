@@ -1,3 +1,15 @@
 {
-  "__version__": "1.2.9"
+  "__version__": "1.2.9",
+  "splash-setting": {
+    "url": "/Users/ihengshuai/coding/games/shoot_game/assets/res/loading-girl.gif",
+    "displayRatio": 0.4,
+    "totalTime": 1000,
+    "clearColor": {
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "w": 0
+    },
+    "displayWatermark": false
+  }
 }
