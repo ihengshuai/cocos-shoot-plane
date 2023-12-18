@@ -12,8 +12,25 @@
       },
       {
         "index": 3,
-        "name": "BULLET"
+        "name": "USER_BULLET"
+      },
+      {
+        "index": 4,
+        "name": "ENEMY_BULLET"
       }
-    ]
+    ],
+    "collisionMatrix": {
+      "0": 1,
+      "1": 20,
+      "2": 10,
+      "3": 4,
+      "4": 2
+    }
+  },
+  "general": {
+    "designResolution": {
+      "width": 720,
+      "height": 1280
+    }
   }
 }

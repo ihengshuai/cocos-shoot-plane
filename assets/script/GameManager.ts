@@ -1,39 +1,109 @@
-import { _decorator, Component, instantiate, log, math, Node, Prefab, Size, Vec2, Vec3 } from "cc";
-import { Bullet } from "./bullet/Bullet";
+import {
+  _decorator,
+  Component,
+  Label,
+  math,
+  Node,
+  Prefab,
+  randomRangeInt,
+} from "cc";
 import { EnemyPlane } from "./plane/EnemyPlane";
+import { UIMain } from "./ui/UIMain";
+import { AudioManager } from "./AudioManager";
+import { UserPlane } from "./plane/UserPlane";
+import { PoolManager } from "./PoolManager";
 const { ccclass, property } = _decorator;
 
 @ccclass("GameManager")
 export class GameManager extends Component {
-  @property(Node)
-  userPlaner = null;
+  @property(UIMain)
+  UIMain: UIMain = null;
+  @property(UserPlane)
+  userPlaner: UserPlane = null;
   @property(Prefab)
   enemyPlaner: Prefab = null;
-  @property(Prefab)
-  bullet: Prefab = null;
-  @property(Prefab)
-  userBullet: Prefab = null;
   @property
   bulletSpeed = 1;
   @property
   shootTime = 0.3;
   @property(Node)
-  bulletRoot = null;
+  bulletRoot: Node = null;
+  @property(Label)
+  gameScore = null;
+  @property(AudioManager)
+  audioManager: AudioManager = null;
 
   _isShooting = false;
   _curShootTime = 0;
-  _createEnemyTime = 0.5;
+  _createEnemyTime = 0.3;
   _curEnemyTime = 0;
+  score = 0;
+  isStart = false;
 
   protected start(): void {
     this._init();
   }
 
+  // 游戏开始
+  beginGame() {
+    this._init();
+    this.isStart = true;
+    this.userPlaner.node.setPosition(0, 0, 30);
+  }
+
+  // 游戏结束
+  stopGame() {
+    this.isStart = false;
+    this.toggleShootState(false);
+    this.destroyAllPlanes();
+    this.gameScore.string = "0";
+    this.UIMain.stopGame();
+  }
+
+  protected _init() {
+    this._curShootTime = this.shootTime;
+    this.score = 0;
+  }
+
+  changeCore() {
+    this.score++;
+    this.gameScore.string = this.score.toString();
+  }
+
+  // 创建敌机
+  createEnemyPlane() {
+    const enemyPlaner = PoolManager.instance.getNode(
+      this.enemyPlaner,
+      this.node
+    );
+    const enemyPlanerComp = enemyPlaner.getComponent(EnemyPlane);
+    enemyPlanerComp.show(this, randomRangeInt(16, 24));
+    const x = math.randomRangeInt(-20, 20);
+    enemyPlaner.setPosition(x, 0, -50);
+  }
+
+  toggleShootState(shooting?: boolean) {
+    this._isShooting = shooting ?? !this._isShooting;
+  }
+
+  destroyAllPlanes() {
+    // const children = this.gameManager.node.children;
+    // const len = children.length;
+    this.node.destroyAllChildren();
+    this.bulletRoot.destroyAllChildren();
+  }
+
+  // 播放音效
+  playAudioEffect(name: string, volume = 1) {
+    this.audioManager.playAudio(name, volume);
+  }
+
   protected update(dt: number): void {
+    if (!this.isStart) return;
     // 处理子弹
     this._curShootTime += dt;
     if (this._isShooting && this._curShootTime > this.shootTime) {
-      this.createUserBullet();
+      this.userPlaner.createUserBullet();
       this._curShootTime = 0;
     }
 
@@ -43,47 +113,5 @@ export class GameManager extends Component {
       this.createEnemyPlane();
       this._curEnemyTime = -0.5;
     }
-  }
-
-  _init() {
-    this._curShootTime = this.shootTime;
-  }
-
-  // 创建子弹
-  createUserBullet() {
-    // 使用材质构造节点
-    const bullet = instantiate(this.userBullet);
-    // 节点需添加到父节点中
-    bullet.setParent(this.bulletRoot);
-    // 获取到飞机的位置
-    const pos = this.userPlaner.position;
-    // 设置子弹的初始位置
-    bullet.setPosition(pos.x, pos.y, pos.z - 7);
-    // 获取子弹组件
-    const bulletComp = bullet.getComponent(Bullet);
-    bulletComp.show(this.bulletSpeed);
-  }
-
-  // 创建敌机
-  createEnemyPlane() {
-    const enemyPlaner = instantiate(this.enemyPlaner);
-    enemyPlaner.setParent(this.node);
-    const enemyPlanerComp = enemyPlaner.getComponent(EnemyPlane);
-    enemyPlanerComp.show(this, 20);
-    const x = math.randomRangeInt(-20, 20);
-    enemyPlaner.setPosition(x, 0, -50);
-  }
-
-  // 创建敌机子弹
-  createEnemyBullet(pos: Vec3) {
-    const bullet = instantiate(this.bullet);
-    bullet.setParent(this.bulletRoot);
-    bullet.setPosition(pos.x, pos.y, pos.z + 4);
-    const bulletComp = bullet.getComponent(Bullet);
-    bulletComp.show(0.6, true);
-  }
-
-  toggleShootState() {
-    this._isShooting = !this._isShooting;
   }
 }
